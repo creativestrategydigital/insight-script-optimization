@@ -86,25 +86,27 @@ ASSIGNMENT SUMMARY
 30/05/2026: ASSIGNED=179, TARGET=40
 
 ======================
-LIMITING TO DAILY TARGETS + BUFFER
+LIMITING TO DAILY TARGETS + BUFFER (30% MAX 120)
 ======================
-✓ 18/05/2026: Kept 40, Buffer +141
-✓ 20/05/2026: Kept 40, Buffer +325
-✓ 21/05/2026: Kept 40, Buffer +316
-✓ 22/05/2026: Kept 40, Buffer +321
-✓ 23/05/2026: Kept 40, Buffer +333
-✓ 25/05/2026: Kept 40, Buffer +57
-✓ 27/05/2026: Kept 40, Buffer +130
-✓ 28/05/2026: Kept 40, Buffer +134
-✓ 29/05/2026: Kept 40, Buffer +142
-✓ 30/05/2026: Kept 40, Buffer +139
+✓ 18/05/2026: Main=40, Buffer+=12 (30%) [12/120]
+✓ 20/05/2026: Main=40, Buffer+=12 (30%) [24/120]
+✓ 21/05/2026: Main=40, Buffer+=12 (30%) [36/120]
+✓ 22/05/2026: Main=40, Buffer+=12 (30%) [48/120]
+✓ 23/05/2026: Main=40, Buffer+=12 (30%) [60/120]
+✓ 25/05/2026: Main=40, Buffer+=12 (30%) [72/120]
+✓ 27/05/2026: Main=40, Buffer+=12 (30%) [84/120]
+✓ 28/05/2026: Main=40, Buffer+=12 (30%) [96/120]
+✓ 29/05/2026: Main=40, Buffer+=12 (30%) [108/120]
+✓ 30/05/2026: Main=40, Buffer+=12 (30%) [120/120]
+
+✓ Buffer total: 120 (max 120)
 
 ======================
 FINAL RESULTS
 ======================
 ✓ Main audits exported: 400
-✓ Buffer exported: 2038
-✓ Total selected: 2438
+✓ Buffer exported: 120
+✓ Total selected: 520
 ✓ Average audits/day: 33.33
 ✓ Average audits/auditor/day: 8.33
 

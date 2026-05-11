@@ -35,15 +35,11 @@ const MAX_VISITS_PER_AUDITOR = 10;
  
 // MAIN SAMPLE
 const TARGET_AUDITS = 400;
- 
+
 // BUFFER
+const BUFFER_PERCENT = 0.3;
 const BUFFER_SIZE = 120;
- 
-// TOTAL SAMPLE
-const TOTAL_SAMPLE =
-  TARGET_AUDITS +
-  BUFFER_SIZE;
- 
+
 // ======================================================
 // DATE FUNCTIONS
 // ======================================================
@@ -746,7 +742,7 @@ function main() {
   }
 
   // ======================================================
-  // LIMIT TO DAILY TARGET + BUFFER
+  // LIMIT TO DAILY TARGET + BUFFER (30% OF MAIN, MAX 120)
   // ======================================================
 
   console.log(
@@ -754,14 +750,20 @@ function main() {
   );
 
   console.log(
-    'LIMITING TO DAILY TARGETS + BUFFER'
+    'LIMITING TO DAILY TARGETS + BUFFER (30% MAX 120)'
   );
 
   console.log(
     '======================'
   );
 
+  let bufferCountTotal = 0;
+
   for (const d of AUDITOR_DATES) {
+
+    if (bufferCountTotal >= BUFFER_SIZE) {
+      break;
+    }
 
     const target =
       dailyTargets[d];
@@ -771,7 +773,7 @@ function main() {
       target
     ) {
 
-      // Shuffle and split: keep target, rest goes to buffer
+      // First: limit to target (main visits)
       const shuffled =
         shuffle(
           auditsByDate[d]
@@ -783,22 +785,46 @@ function main() {
           target
         );
 
-      const excess =
-        shuffled.slice(
-          target
-        );
-
       auditsByDate[d] = kept;
 
+      // Second: take BUFFER_PERCENT of main for buffer (but not exceeding remaining buffer)
+      const shuffledMain =
+        shuffle([...kept]);
+
+      const remainingBuffer =
+        BUFFER_SIZE -
+        bufferCountTotal;
+
+      const bufferCount =
+        Math.min(
+          Math.round(
+            target *
+            BUFFER_PERCENT
+          ),
+          remainingBuffer
+        );
+
+      const bufferPart =
+        shuffledMain.slice(
+          0,
+          bufferCount
+        );
+
       selectedBuffer.push(
-        ...excess
+        ...bufferPart
       );
 
+      bufferCountTotal += bufferPart.length;
+
       console.log(
-        `✓ ${d}: Kept ${kept.length}, Buffer +${excess.length}`
+        `✓ ${d}: Main=${kept.length}, Buffer+=${bufferPart.length} (${Math.round(BUFFER_PERCENT*100)}%) [${bufferCountTotal}/${BUFFER_SIZE}]`
       );
     }
   }
+
+  console.log(
+    `\n✓ Buffer total: ${selectedBuffer.length} (max ${BUFFER_SIZE})`
+  );
 
   // ======================================================
   // BUILD FINAL OUTPUT
@@ -985,6 +1011,9 @@ function main() {
     selectedBuffer.map(
       v => ({
  
+        AuditDate:
+          v.AuditDate,
+
         OriginalVisitDate:
           v.DATE,
  
