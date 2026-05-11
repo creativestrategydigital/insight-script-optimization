@@ -49,17 +49,44 @@ const TOTAL_SAMPLE =
 // ======================================================
  
 function parseDate(d) {
- 
+
   if (d instanceof Date) {
     return d;
   }
- 
+
+  // EXCEL SERIAL DATE (e.g., 46158)
+  if (
+    typeof d === 'number' ||
+    /^\d+$/.test(d)
+  ) {
+
+    const serial =
+      Number(d);
+
+    // Excel serial date: days since 1900-01-01
+    // But Excel thinks 1900 was a leap year (bug), so we adjust
+    const epoch =
+      new Date(1899, 11, 30);
+
+    const date =
+      new Date(
+        epoch.getTime() +
+        serial *
+          24 *
+          60 *
+          60 *
+          1000
+      );
+
+    return date;
+  }
+
   const [dd, mm, yyyy] =
     d.toString()
       .trim()
       .split('/')
       .map(Number);
- 
+
   return new Date(
     yyyy,
     mm - 1,
@@ -300,42 +327,100 @@ function main() {
   }
  
   // ======================================================
-  // LOAD CSV
+  // LOAD FILE (CSV OR EXCEL)
   // ======================================================
- 
-  const raw =
-    fs.readFileSync(
-      filename,
-      'utf8'
+
+  let rows;
+
+  if (
+    filename.endsWith('.csv')
+  ) {
+
+    const raw =
+      fs.readFileSync(
+        filename,
+        'utf8'
+      );
+
+    rows = parseCSV(raw);
+  } else if (
+    filename.endsWith('.xls') ||
+    filename.endsWith('.xlsx')
+  ) {
+
+    const workbook =
+      XLSX.readFile(filename);
+
+    const firstSheet =
+      workbook.SheetNames[0];
+
+    const worksheet =
+      workbook.Sheets[firstSheet];
+
+    rows =
+      XLSX.utils.sheet_to_json(
+        worksheet
+      );
+  } else {
+
+    console.log(
+      'Error: File must be .csv, .xls, or .xlsx'
     );
- 
-  const rows =
-    parseCSV(raw);
- 
+
+    process.exit(1);
+  }
+
   console.log(
     `✓ Loaded ${rows.length} rows`
   );
- 
+
+  // DEBUG: Check first rows
+  console.log(
+    '\n=== DEBUG FIRST 3 ROWS ==='
+  );
+
+  for (
+    let i = 0;
+    i < Math.min(3, rows.length);
+    i++
+  ) {
+
+    console.log(
+      `Row ${i}: DATE="${rows[i].DATE}" (type: ${typeof rows[i].DATE}), Lat="${rows[i].Latitude}", Lon="${rows[i].Longitude}"`
+    );
+
+    const parsedDate =
+      parseDate(rows[i].DATE);
+
+    console.log(
+      `  Parsed date: ${parsedDate}`
+    );
+  }
+
+  console.log(
+    '========================\n'
+  );
+
   // ======================================================
   // PREPARE VISITS
   // ======================================================
  
   const visits = [];
- 
+
   for (const row of rows) {
- 
+
     const lat =
       parseFloat(
-        row.Latitude
-          ?.replace(',', '.')
+        String(row.Latitude)
+          .replace(',', '.')
       );
- 
+
     const lon =
       parseFloat(
-        row.Longitude
-          ?.replace(',', '.')
+        String(row.Longitude)
+          .replace(',', '.')
       );
- 
+
     if (
       isNaN(lat) ||
       isNaN(lon)
@@ -350,7 +435,7 @@ function main() {
     const eligibleAuditDates =
       [];
 
-    for (const offset of [2, 3]) {
+    for (const offset of [2]) {
 
       const auditDate =
         new Date(visitDate);
@@ -412,96 +497,37 @@ function main() {
   }
  
   // ======================================================
-  // PROPORTIONAL SAMPLE
+  // USE ALL VISITS (NO SAMPLING BEFORE ASSIGNMENT)
   // ======================================================
- 
-  const selectedMain = [];
- 
-  const selectedBuffer = [];
- 
-  const totalUniverse =
-    visits.length;
- 
+
+  const selectedMain = [...visits];
+
+  const selectedBuffer = [];  // No buffer in this mode
+
   console.log(
     '\n======================'
   );
- 
+
   console.log(
-    'SAMPLE PLAN'
+    'ALL VISITS'
   );
- 
+
   console.log(
     '======================'
   );
- 
+
   for (
     const [sr, srVisits]
     of Object.entries(bySR)
   ) {
- 
-    const proportion =
-      srVisits.length /
-      totalUniverse;
- 
-    const totalSampleSize =
-      Math.max(
-        1,
-        Math.round(
-          proportion *
-          TOTAL_SAMPLE
-        )
-      );
- 
-    const mainSampleSize =
-      Math.round(
-        totalSampleSize *
-        TARGET_AUDITS /
-        TOTAL_SAMPLE
-      );
- 
-    const bufferSampleSize =
-      totalSampleSize -
-      mainSampleSize;
- 
-    const randomized =
-      shuffle(srVisits);
- 
-    const mainPart =
-      randomized.slice(
-        0,
-        mainSampleSize
-      );
- 
-    const bufferPart =
-      randomized.slice(
-        mainSampleSize,
-        mainSampleSize +
-        bufferSampleSize
-      );
- 
-    selectedMain.push(
-      ...mainPart
-    );
- 
-    selectedBuffer.push(
-      ...bufferPart
-    );
- 
+
     console.log(
-      `${sr} | Universe=${srVisits.length} | Main=${mainPart.length} | Buffer=${bufferPart.length}`
+      `${sr} | Universe=${srVisits.length}`
     );
   }
- 
+
   console.log(
-    `\n✓ Main sample: ${selectedMain.length}`
-  );
- 
-  console.log(
-    `✓ Buffer sample: ${selectedBuffer.length}`
-  );
- 
-  console.log(
-    `✓ Total sample: ${selectedMain.length + selectedBuffer.length}`
+    `\n✓ Total eligible visits: ${selectedMain.length}`
   );
  
   // ======================================================
@@ -571,7 +597,7 @@ function main() {
     eligibleByDate[d] = 0;
   }
 
-  for (const v of selectedMain) {
+  for (const v of visits) {
 
     for (
       const ad of
@@ -592,37 +618,41 @@ function main() {
     '\n======================'
   );
 
-  console.log(
-    'ELIGIBLE VS TARGETS'
-  );
+  const DAILY_MAX_CAPACITY =
+    NUM_AUDITORS *
+    MAX_VISITS_PER_AUDITOR;  // 4 * 10 = 40
 
-  console.log(
-    '======================'
-  );
-
+  // FIRST PASS: Set target to min(eligible, capacity) or 0 if no eligible
   for (const d of AUDITOR_DATES) {
 
     const eligible =
       eligibleByDate[d];
 
-    const target =
-      dailyTargets[d];
+    if (eligible === 0) {
 
-    const actualTarget =
-      Math.min(target, eligible);
-
-    if (actualTarget < target) {
+      dailyTargets[d] = 0;
 
       console.log(
-        `⚠ ${d}: TARGET=${target} but ELIGIBLE=${eligible} → ADJUSTED TO ${actualTarget}`
+        `⚠ ${d}: ELIGIBLE=0 → ADJUSTED TO 0`
       );
+    } else if (
+      eligible >=
+      DAILY_MAX_CAPACITY
+    ) {
 
       dailyTargets[d] =
-        actualTarget;
-    } else {
+        DAILY_MAX_CAPACITY;
 
       console.log(
-        `✓ ${d}: TARGET=${target}, ELIGIBLE=${eligible}`
+        `✓ ${d}: ELIGIBLE=${eligible}, CAPACITY=${DAILY_MAX_CAPACITY}`
+      );
+    } else {
+
+      dailyTargets[d] =
+        eligible;
+
+      console.log(
+        `⚠ ${d}: ELIGIBLE=${eligible} < CAPACITY=${DAILY_MAX_CAPACITY} → ADJUSTED TO ${eligible}`
       );
     }
   }
@@ -685,28 +715,113 @@ function main() {
       ].push(v);
     }
   }
- 
+
+  // ======================================================
+  // ASSIGNMENT SUMMARY
+  // ======================================================
+
+  console.log(
+    '\n======================'
+  );
+
+  console.log(
+    'ASSIGNMENT SUMMARY'
+  );
+
+  console.log(
+    '======================'
+  );
+
+  for (const d of AUDITOR_DATES) {
+
+    const count =
+      auditsByDate[d].length;
+
+    const target =
+      dailyTargets[d];
+
+    console.log(
+      `${d}: ASSIGNED=${count}, TARGET=${target}`
+    );
+  }
+
+  // ======================================================
+  // LIMIT TO DAILY TARGET + BUFFER
+  // ======================================================
+
+  console.log(
+    '\n======================'
+  );
+
+  console.log(
+    'LIMITING TO DAILY TARGETS + BUFFER'
+  );
+
+  console.log(
+    '======================'
+  );
+
+  for (const d of AUDITOR_DATES) {
+
+    const target =
+      dailyTargets[d];
+
+    if (
+      auditsByDate[d].length >
+      target
+    ) {
+
+      // Shuffle and split: keep target, rest goes to buffer
+      const shuffled =
+        shuffle(
+          auditsByDate[d]
+        );
+
+      const kept =
+        shuffled.slice(
+          0,
+          target
+        );
+
+      const excess =
+        shuffled.slice(
+          target
+        );
+
+      auditsByDate[d] = kept;
+
+      selectedBuffer.push(
+        ...excess
+      );
+
+      console.log(
+        `✓ ${d}: Kept ${kept.length}, Buffer +${excess.length}`
+      );
+    }
+  }
+
   // ======================================================
   // BUILD FINAL OUTPUT
   // ======================================================
- 
+
   const finalRows = [];
- 
+
   for (
     const auditDate of
     AUDITOR_DATES
   ) {
- 
+
     const dayVisits =
       auditsByDate[
         auditDate
       ];
- 
+
     if (
       dayVisits.length === 0
     ) {
       continue;
     }
+
  
     // SORT GEO
     const sorted =

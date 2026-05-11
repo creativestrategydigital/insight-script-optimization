@@ -1,35 +1,43 @@
 ✓ Loaded 2794 rows
-✓ Eligible visits: 2786
+
+=== DEBUG FIRST 3 ROWS ===
+Row 0: DATE="46158" (type: number), Lat="5.34904", Lon="-3.86766"
+  Parsed date: Sat May 16 2026 00:16:08 GMT+0000 (Greenwich Mean Time)
+Row 1: DATE="46158" (type: number), Lat="5.29651", Lon="-3.74875"
+  Parsed date: Sat May 16 2026 00:16:08 GMT+0000 (Greenwich Mean Time)
+Row 2: DATE="46158" (type: number), Lat="5.32194", Lon="-3.87067"
+  Parsed date: Sat May 16 2026 00:16:08 GMT+0000 (Greenwich Mean Time)
+========================
+
+✓ Eligible visits: 2438
 
 ======================
-SAMPLE PLAN
+ALL VISITS
 ======================
-AIME KONAN | Universe=134 | Main=19 | Buffer=6
-ALEXANDRE TIEGBE | Universe=144 | Main=21 | Buffer=6
-AMINE COULIBALY | Universe=138 | Main=20 | Buffer=6
-MARC AMON | Universe=138 | Main=20 | Buffer=6
-ANGELIQUE KOUASSI | Universe=137 | Main=20 | Buffer=6
-EMILE ANGAN | Universe=6 | Main=1 | Buffer=0
-EPONOH ETTIEN | Universe=125 | Main=18 | Buffer=5
-EULOGE ESSIS | Universe=146 | Main=21 | Buffer=6
-Guy-Evrard Fodjo | Universe=128 | Main=18 | Buffer=6
-Innocent Yoboue | Universe=121 | Main=18 | Buffer=5
-LAETITIA KISSI | Universe=122 | Main=18 | Buffer=5
-Berenger-Orphée Jenifer Okou | Universe=138 | Main=20 | Buffer=6
-LAFALI KONE | Universe=140 | Main=20 | Buffer=6
-JOSEPH ABOUA | Universe=129 | Main=18 | Buffer=6
-LANDRY TIEHI | Universe=149 | Main=22 | Buffer=6
-SAHI DIOMANDE | Universe=123 | Main=18 | Buffer=5
-TCHESSE GOHOURE | Universe=165 | Main=24 | Buffer=7
-VERCRUSSE AGAH | Universe=124 | Main=18 | Buffer=5
-FRANCK KOUADIO | Universe=132 | Main=19 | Buffer=6
-HERMANN GOGOUA | Universe=156 | Main=22 | Buffer=7
-FRANCK YAO | Universe=134 | Main=19 | Buffer=6
-RODRIGUE YOHORE | Universe=57 | Main=8 | Buffer=3
+AIME KONAN | Universe=118
+ALEXANDRE TIEGBE | Universe=128
+AMINE COULIBALY | Universe=119
+MARC AMON | Universe=125
+ANGELIQUE KOUASSI | Universe=119
+EMILE ANGAN | Universe=6
+EPONOH ETTIEN | Universe=107
+EULOGE ESSIS | Universe=132
+Guy-Evrard Fodjo | Universe=108
+Innocent Yoboue | Universe=107
+LAETITIA KISSI | Universe=105
+Berenger-Orphée Jenifer Okou | Universe=119
+LAFALI KONE | Universe=120
+JOSEPH ABOUA | Universe=114
+LANDRY TIEHI | Universe=133
+SAHI DIOMANDE | Universe=105
+TCHESSE GOHOURE | Universe=147
+VERCRUSSE AGAH | Universe=106
+FRANCK KOUADIO | Universe=115
+HERMANN GOGOUA | Universe=138
+FRANCK YAO | Universe=115
+RODRIGUE YOHORE | Universe=52
 
-✓ Main sample: 402
-✓ Buffer sample: 120
-✓ Total sample: 522
+✓ Total eligible visits: 2438
 
 ======================
 FIXED DAILY TARGETS
@@ -48,65 +56,57 @@ FIXED DAILY TARGETS
 30/05/2026 : 33 audits
 
 ======================
-ELIGIBLE VS TARGETS
+✓ 18/05/2026: ELIGIBLE=181, CAPACITY=40
+⚠ 19/05/2026: ELIGIBLE=0 → ADJUSTED TO 0
+✓ 20/05/2026: ELIGIBLE=365, CAPACITY=40
+✓ 21/05/2026: ELIGIBLE=356, CAPACITY=40
+✓ 22/05/2026: ELIGIBLE=361, CAPACITY=40
+✓ 23/05/2026: ELIGIBLE=373, CAPACITY=40
+✓ 25/05/2026: ELIGIBLE=97, CAPACITY=40
+⚠ 26/05/2026: ELIGIBLE=0 → ADJUSTED TO 0
+✓ 27/05/2026: ELIGIBLE=170, CAPACITY=40
+✓ 28/05/2026: ELIGIBLE=174, CAPACITY=40
+✓ 29/05/2026: ELIGIBLE=182, CAPACITY=40
+✓ 30/05/2026: ELIGIBLE=179, CAPACITY=40
+
 ======================
-⚠ 18/05/2026: TARGET=34 but ELIGIBLE=30 → ADJUSTED TO 30
-⚠ 19/05/2026: TARGET=34 but ELIGIBLE=30 → ADJUSTED TO 30
-✓ 20/05/2026: TARGET=34, ELIGIBLE=47
-✓ 21/05/2026: TARGET=34, ELIGIBLE=93
-✓ 22/05/2026: TARGET=33, ELIGIBLE=97
-✓ 23/05/2026: TARGET=33, ELIGIBLE=108
-✓ 25/05/2026: TARGET=33, ELIGIBLE=60
-⚠ 26/05/2026: TARGET=33 but ELIGIBLE=7 → ADJUSTED TO 7
-⚠ 27/05/2026: TARGET=33 but ELIGIBLE=28 → ADJUSTED TO 28
-✓ 28/05/2026: TARGET=33, ELIGIBLE=51
-✓ 29/05/2026: TARGET=33, ELIGIBLE=56
-✓ 30/05/2026: TARGET=33, ELIGIBLE=60
-⚠ WARNING: Auditor 1 has only 5 visits on 18/05/2026
-⚠ WARNING: Auditor 2 has only 5 visits on 18/05/2026
-⚠ WARNING: Auditor 3 has only 4 visits on 18/05/2026
-⚠ WARNING: Auditor 4 has only 4 visits on 18/05/2026
-⚠ WARNING: Auditor 1 has only 3 visits on 19/05/2026
-⚠ WARNING: Auditor 2 has only 3 visits on 19/05/2026
-⚠ WARNING: Auditor 3 has only 3 visits on 19/05/2026
-⚠ WARNING: Auditor 4 has only 3 visits on 19/05/2026
-⚠ WARNING: Auditor 1 has only 7 visits on 20/05/2026
-⚠ WARNING: Auditor 2 has only 7 visits on 20/05/2026
-⚠ WARNING: Auditor 3 has only 7 visits on 20/05/2026
-⚠ WARNING: Auditor 4 has only 7 visits on 20/05/2026
-⚠ WARNING: Auditor 1 has 14 visits on 22/05/2026
-⚠ WARNING: Auditor 2 has 14 visits on 22/05/2026
-⚠ WARNING: Auditor 3 has 14 visits on 22/05/2026
-⚠ WARNING: Auditor 4 has 13 visits on 22/05/2026
-⚠ WARNING: Auditor 1 has 20 visits on 23/05/2026
-⚠ WARNING: Auditor 2 has 20 visits on 23/05/2026
-⚠ WARNING: Auditor 3 has 19 visits on 23/05/2026
-⚠ WARNING: Auditor 4 has 19 visits on 23/05/2026
-⚠ WARNING: Auditor 1 has 14 visits on 25/05/2026
-⚠ WARNING: Auditor 2 has 14 visits on 25/05/2026
-⚠ WARNING: Auditor 3 has 14 visits on 25/05/2026
-⚠ WARNING: Auditor 4 has 13 visits on 25/05/2026
-⚠ WARNING: Auditor 1 has only 2 visits on 26/05/2026
-⚠ WARNING: Auditor 2 has only 1 visits on 26/05/2026
-⚠ WARNING: Auditor 3 has only 1 visits on 26/05/2026
-⚠ WARNING: Auditor 4 has only 1 visits on 26/05/2026
-⚠ WARNING: Auditor 1 has only 4 visits on 27/05/2026
-⚠ WARNING: Auditor 2 has only 3 visits on 27/05/2026
-⚠ WARNING: Auditor 3 has only 3 visits on 27/05/2026
-⚠ WARNING: Auditor 4 has only 3 visits on 27/05/2026
-⚠ WARNING: Auditor 1 has only 7 visits on 28/05/2026
-⚠ WARNING: Auditor 2 has only 7 visits on 28/05/2026
-⚠ WARNING: Auditor 3 has only 6 visits on 28/05/2026
-⚠ WARNING: Auditor 4 has only 6 visits on 28/05/2026
+ASSIGNMENT SUMMARY
+======================
+18/05/2026: ASSIGNED=181, TARGET=40
+19/05/2026: ASSIGNED=0, TARGET=0
+20/05/2026: ASSIGNED=365, TARGET=40
+21/05/2026: ASSIGNED=356, TARGET=40
+22/05/2026: ASSIGNED=361, TARGET=40
+23/05/2026: ASSIGNED=373, TARGET=40
+25/05/2026: ASSIGNED=97, TARGET=40
+26/05/2026: ASSIGNED=0, TARGET=0
+27/05/2026: ASSIGNED=170, TARGET=40
+28/05/2026: ASSIGNED=174, TARGET=40
+29/05/2026: ASSIGNED=182, TARGET=40
+30/05/2026: ASSIGNED=179, TARGET=40
+
+======================
+LIMITING TO DAILY TARGETS + BUFFER
+======================
+✓ 18/05/2026: Kept 40, Buffer +141
+✓ 20/05/2026: Kept 40, Buffer +325
+✓ 21/05/2026: Kept 40, Buffer +316
+✓ 22/05/2026: Kept 40, Buffer +321
+✓ 23/05/2026: Kept 40, Buffer +333
+✓ 25/05/2026: Kept 40, Buffer +57
+✓ 27/05/2026: Kept 40, Buffer +130
+✓ 28/05/2026: Kept 40, Buffer +134
+✓ 29/05/2026: Kept 40, Buffer +142
+✓ 30/05/2026: Kept 40, Buffer +139
 
 ======================
 FINAL RESULTS
 ======================
-✓ Main audits exported: 402
-✓ Buffer exported: 120
-✓ Total selected: 522
-✓ Average audits/day: 33.50
-✓ Average audits/auditor/day: 8.38
+✓ Main audits exported: 400
+✓ Buffer exported: 2038
+✓ Total selected: 2438
+✓ Average audits/day: 33.33
+✓ Average audits/auditor/day: 8.33
 
 ✓ Main file: Audit_Main_400.xlsx
 ✓ Buffer file: Audit_Buffer_120.xlsx
