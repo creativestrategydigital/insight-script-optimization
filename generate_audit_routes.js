@@ -41,6 +41,17 @@ const BUFFER_PERCENT = 0.3;
 const BUFFER_SIZE = 120;
 
 // ======================================================
+// TIER PRIORITY COEFFICIENTS
+// ======================================================
+
+const TIER_COEFFICIENTS = {
+  'Tier 1': 5,
+  'Tier 2': 3,
+  'Tier 3': 2,
+  'Tier 4': 1
+};
+
+// ======================================================
 // DATE FUNCTIONS
 // ======================================================
  
@@ -123,6 +134,28 @@ function shuffle(array) {
   }
  
   return arr;
+}
+
+// ======================================================
+// WEIGHTED SHUFFLE (for tier priority)
+// ======================================================
+
+function weightedShuffle(visits) {
+
+  // Score each visit: random * tier coefficient
+  // Higher tier = higher chance of getting a high score
+  const scored =
+    visits.map((v) => ({
+      visit: v,
+      score:
+        Math.random() *
+        (v.tierCoefficient || 1)
+    }));
+
+  // Sort by score descending
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.map((s) => s.visit);
 }
  
 // ======================================================
@@ -470,12 +503,58 @@ function main() {
     row.eligibleAuditDates =
       eligibleAuditDates;
 
+    // Read tier from 'Verif tiering' column and assign coefficient
+    const tierValue =
+      row['Verif tiering'];
+
+    row.tierCoefficient =
+      TIER_COEFFICIENTS[tierValue] || 1;
+
+    row.tier = tierValue || 'Unknown';
+
     visits.push(row);
   }
  
   console.log(
     `✓ Eligible visits: ${visits.length}`
   );
+
+  // TIER DISTRIBUTION
+  const tierCounts = {};
+
+  for (const v of visits) {
+
+    const tier =
+      v.tier || 'Unknown';
+
+    tierCounts[tier] =
+      (tierCounts[tier] || 0) + 1;
+  }
+
+  console.log(
+    '\n======================'
+  );
+
+  console.log(
+    'TIER DISTRIBUTION'
+  );
+
+  console.log(
+    '======================'
+  );
+
+  for (
+    const [tier, count] of
+    Object.entries(tierCounts)
+  ) {
+
+    const coeff =
+      TIER_COEFFICIENTS[tier] || 1;
+
+    console.log(
+      `${tier}: ${count} visits (coefficient: ${coeff})`
+    );
+  }
  
   // ======================================================
   // GROUP BY SR
@@ -665,7 +744,7 @@ function main() {
   }
  
   const randomizedMain =
-    shuffle(selectedMain);
+    weightedShuffle(selectedMain);
  
   for (const v of randomizedMain) {
  
@@ -965,7 +1044,10 @@ function main() {
  
               Channel:
                 v['New Channel'],
- 
+
+              Tier:
+                v.tier,
+
               Telephone:
                 v.Telephone,
  
@@ -1121,4 +1203,4 @@ function main() {
 }
  
 main();
-// node generate_audit_routes.js "Abidjan_Mai_16_28.csv" > audit_plan.txt
+// node generate_audit_routes.js "Abidjan_Mai_16_28.xls" > audit_plan.txt

@@ -12,6 +12,13 @@ Row 2: DATE="46158" (type: number), Lat="5.32194", Lon="-3.87067"
 ✓ Eligible visits: 2438
 
 ======================
+TIER DISTRIBUTION
+======================
+Tier 1: 724 visits (coefficient: 5)
+Tier 2: 993 visits (coefficient: 3)
+Tier 3: 721 visits (coefficient: 2)
+
+======================
 ALL VISITS
 ======================
 AIME KONAN | Universe=118
