@@ -12,39 +12,101 @@ Row 2: DATE="46158" (type: number), Lat="5.32194", Lon="-3.87067"
 ✓ Eligible visits: 2438
 
 ======================
-TIER DISTRIBUTION
+TOP 20 SR SELECTED (by total visits)
 ======================
-Tier 1: 724 visits (coefficient: 5)
-Tier 2: 993 visits (coefficient: 3)
-Tier 3: 721 visits (coefficient: 2)
+✓ TCHESSE GOHOURE: 147 visits
+✓ HERMANN GOGOUA: 138 visits
+✓ LANDRY TIEHI: 133 visits
+✓ EULOGE ESSIS: 132 visits
+✓ ALEXANDRE TIEGBE: 128 visits
+✓ MARC AMON: 125 visits
+✓ LAFALI KONE: 120 visits
+✓ AMINE COULIBALY: 119 visits
+✓ ANGELIQUE KOUASSI: 119 visits
+✓ Berenger-Orphée Jenifer Okou: 119 visits
+✓ AIME KONAN: 118 visits
+✓ FRANCK KOUADIO: 115 visits
+✓ FRANCK YAO: 115 visits
+✓ JOSEPH ABOUA: 114 visits
+✓ Guy-Evrard Fodjo: 108 visits
+✓ EPONOH ETTIEN: 107 visits
+✓ Innocent Yoboue: 107 visits
+✓ VERCRUSSE AGAH: 106 visits
+✓ LAETITIA KISSI: 105 visits
+✓ SAHI DIOMANDE: 105 visits
+✗ RODRIGUE YOHORE: 52 visits
+✗ EMILE ANGAN: 6 visits
 
 ======================
-ALL VISITS
+EQUITABLE SELECTION BY SR AND TIER
 ======================
-AIME KONAN | Universe=118
-ALEXANDRE TIEGBE | Universe=128
-AMINE COULIBALY | Universe=119
-MARC AMON | Universe=125
-ANGELIQUE KOUASSI | Universe=119
-EMILE ANGAN | Universe=6
-EPONOH ETTIEN | Universe=107
-EULOGE ESSIS | Universe=132
-Guy-Evrard Fodjo | Universe=108
-Innocent Yoboue | Universe=107
-LAETITIA KISSI | Universe=105
-Berenger-Orphée Jenifer Okou | Universe=119
-LAFALI KONE | Universe=120
-JOSEPH ABOUA | Universe=114
-LANDRY TIEHI | Universe=133
-SAHI DIOMANDE | Universe=105
-TCHESSE GOHOURE | Universe=147
-VERCRUSSE AGAH | Universe=106
-FRANCK KOUADIO | Universe=115
-HERMANN GOGOUA | Universe=138
-FRANCK YAO | Universe=115
-RODRIGUE YOHORE | Universe=52
 
-✓ Total eligible visits: 2438
+--- Tier 1 ---
+TCHESSE GOHOURE | Tier 1: Target=9, Available=12, Selected=9
+HERMANN GOGOUA | Tier 1: Target=9, Available=9, Selected=9
+LANDRY TIEHI | Tier 1: Target=8, Available=21, Selected=8
+EULOGE ESSIS | Tier 1: Target=8, Available=40, Selected=8
+ALEXANDRE TIEGBE | Tier 1: Target=8, Available=21, Selected=8
+MARC AMON | Tier 1: Target=7, Available=12, Selected=7
+LAFALI KONE | Tier 1: Target=8, Available=40, Selected=8
+AMINE COULIBALY | Tier 1: Target=8, Available=50, Selected=8
+ANGELIQUE KOUASSI | Tier 1: Target=8, Available=45, Selected=8
+Berenger-Orphée Jenifer Okou | Tier 1: Target=8, Available=61, Selected=8
+AIME KONAN | Tier 1: Target=8, Available=48, Selected=8
+FRANCK KOUADIO | Tier 1: Target=7, Available=26, Selected=7
+FRANCK YAO | Tier 1: Target=7, Available=37, Selected=7
+JOSEPH ABOUA | Tier 1: Target=12, Available=48, Selected=12
+Guy-Evrard Fodjo | Tier 1: Target=6, Available=35, Selected=6
+EPONOH ETTIEN | Tier 1: Target=6, Available=47, Selected=6
+Innocent Yoboue | Tier 1: Target=9, Available=48, Selected=9
+VERCRUSSE AGAH | Tier 1: Target=6, Available=20, Selected=6
+LAETITIA KISSI | Tier 1: Target=6, Available=45, Selected=6
+SAHI DIOMANDE | Tier 1: Target=8, Available=51, Selected=8
+
+--- Tier 2 ---
+TCHESSE GOHOURE | Tier 2: Target=8, Available=73, Selected=8
+HERMANN GOGOUA | Tier 2: Target=7, Available=20, Selected=7
+LANDRY TIEHI | Tier 2: Target=7, Available=66, Selected=7
+EULOGE ESSIS | Tier 2: Target=7, Available=68, Selected=7
+ALEXANDRE TIEGBE | Tier 2: Target=7, Available=36, Selected=7
+MARC AMON | Tier 2: Target=7, Available=70, Selected=7
+LAFALI KONE | Tier 2: Target=6, Available=46, Selected=6
+AMINE COULIBALY | Tier 2: Target=6, Available=51, Selected=6
+ANGELIQUE KOUASSI | Tier 2: Target=6, Available=49, Selected=6
+Berenger-Orphée Jenifer Okou | Tier 2: Target=6, Available=44, Selected=6
+AIME KONAN | Tier 2: Target=6, Available=45, Selected=6
+FRANCK KOUADIO | Tier 2: Target=6, Available=47, Selected=6
+FRANCK YAO | Tier 2: Target=6, Available=51, Selected=6
+JOSEPH ABOUA | Tier 2: Target=6, Available=65, Selected=6
+Guy-Evrard Fodjo | Tier 2: Target=6, Available=43, Selected=6
+EPONOH ETTIEN | Tier 2: Target=6, Available=43, Selected=6
+Innocent Yoboue | Tier 2: Target=9, Available=59, Selected=9
+VERCRUSSE AGAH | Tier 2: Target=6, Available=33, Selected=6
+LAETITIA KISSI | Tier 2: Target=6, Available=24, Selected=6
+SAHI DIOMANDE | Tier 2: Target=6, Available=50, Selected=6
+
+--- Tier 3 ---
+TCHESSE GOHOURE | Tier 3: Target=8, Available=62, Selected=8
+HERMANN GOGOUA | Tier 3: Target=7, Available=109, Selected=7
+LANDRY TIEHI | Tier 3: Target=7, Available=46, Selected=7
+EULOGE ESSIS | Tier 3: Target=7, Available=24, Selected=7
+ALEXANDRE TIEGBE | Tier 3: Target=7, Available=71, Selected=7
+MARC AMON | Tier 3: Target=7, Available=43, Selected=7
+LAFALI KONE | Tier 3: Target=6, Available=34, Selected=6
+AMINE COULIBALY | Tier 3: Target=6, Available=18, Selected=6
+ANGELIQUE KOUASSI | Tier 3: Target=6, Available=25, Selected=6
+Berenger-Orphée Jenifer Okou | Tier 3: Target=6, Available=14, Selected=6
+AIME KONAN | Tier 3: Target=6, Available=25, Selected=6
+FRANCK KOUADIO | Tier 3: Target=6, Available=42, Selected=6
+FRANCK YAO | Tier 3: Target=6, Available=27, Selected=6
+JOSEPH ABOUA | Tier 3: Target=1, Available=1, Selected=1
+Guy-Evrard Fodjo | Tier 3: Target=6, Available=30, Selected=6
+EPONOH ETTIEN | Tier 3: Target=6, Available=17, Selected=6
+VERCRUSSE AGAH | Tier 3: Target=6, Available=53, Selected=6
+LAETITIA KISSI | Tier 3: Target=6, Available=36, Selected=6
+SAHI DIOMANDE | Tier 3: Target=4, Available=4, Selected=4
+
+✓ Total selected for main sample: 400
 
 ======================
 FIXED DAILY TARGETS
@@ -79,41 +141,78 @@ FIXED DAILY TARGETS
 ======================
 ASSIGNMENT SUMMARY
 ======================
-18/05/2026: ASSIGNED=181, TARGET=40
+18/05/2026: ASSIGNED=30, TARGET=40
 19/05/2026: ASSIGNED=0, TARGET=0
-20/05/2026: ASSIGNED=365, TARGET=40
-21/05/2026: ASSIGNED=356, TARGET=40
-22/05/2026: ASSIGNED=361, TARGET=40
-23/05/2026: ASSIGNED=373, TARGET=40
-25/05/2026: ASSIGNED=97, TARGET=40
+20/05/2026: ASSIGNED=64, TARGET=40
+21/05/2026: ASSIGNED=72, TARGET=40
+22/05/2026: ASSIGNED=57, TARGET=40
+23/05/2026: ASSIGNED=66, TARGET=40
+25/05/2026: ASSIGNED=10, TARGET=40
 26/05/2026: ASSIGNED=0, TARGET=0
-27/05/2026: ASSIGNED=170, TARGET=40
-28/05/2026: ASSIGNED=174, TARGET=40
-29/05/2026: ASSIGNED=182, TARGET=40
-30/05/2026: ASSIGNED=179, TARGET=40
+27/05/2026: ASSIGNED=25, TARGET=40
+28/05/2026: ASSIGNED=17, TARGET=40
+29/05/2026: ASSIGNED=33, TARGET=40
+30/05/2026: ASSIGNED=26, TARGET=40
 
 ======================
-LIMITING TO DAILY TARGETS + BUFFER (30% MAX 120)
+KEEPING ALL ASSIGNED AUDITS IN MAIN FILE
 ======================
-✓ 18/05/2026: Main=40, Buffer+=12 (30%) [12/120]
-✓ 20/05/2026: Main=40, Buffer+=12 (30%) [24/120]
-✓ 21/05/2026: Main=40, Buffer+=12 (30%) [36/120]
-✓ 22/05/2026: Main=40, Buffer+=12 (30%) [48/120]
-✓ 23/05/2026: Main=40, Buffer+=12 (30%) [60/120]
-✓ 25/05/2026: Main=40, Buffer+=12 (30%) [72/120]
-✓ 27/05/2026: Main=40, Buffer+=12 (30%) [84/120]
-✓ 28/05/2026: Main=40, Buffer+=12 (30%) [96/120]
-✓ 29/05/2026: Main=40, Buffer+=12 (30%) [108/120]
-✓ 30/05/2026: Main=40, Buffer+=12 (30%) [120/120]
+⚠ 18/05/2026: 30 audits assigned (below target 40)
+⚠ 19/05/2026: No audits assigned
+⚠ 20/05/2026: 64 audits assigned (exceeds target 40)
+⚠ 21/05/2026: 72 audits assigned (exceeds target 40)
+⚠ 22/05/2026: 57 audits assigned (exceeds target 40)
+⚠ 23/05/2026: 66 audits assigned (exceeds target 40)
+⚠ 25/05/2026: 10 audits assigned (below target 40)
+⚠ 26/05/2026: No audits assigned
+⚠ 27/05/2026: 25 audits assigned (below target 40)
+⚠ 28/05/2026: 17 audits assigned (below target 40)
+⚠ 29/05/2026: 33 audits assigned (below target 40)
+⚠ 30/05/2026: 26 audits assigned (below target 40)
 
-✓ Buffer total: 120 (max 120)
+✓ Total audits in main file: 400
+✓ Buffer: 0 visits
+⚠ WARNING: Auditor 3 has only 7 visits on 18/05/2026
+⚠ WARNING: Auditor 4 has only 7 visits on 18/05/2026
+⚠ WARNING: Auditor 1 has 16 visits on 20/05/2026
+⚠ WARNING: Auditor 2 has 16 visits on 20/05/2026
+⚠ WARNING: Auditor 3 has 16 visits on 20/05/2026
+⚠ WARNING: Auditor 4 has 16 visits on 20/05/2026
+⚠ WARNING: Auditor 1 has 18 visits on 21/05/2026
+⚠ WARNING: Auditor 2 has 18 visits on 21/05/2026
+⚠ WARNING: Auditor 3 has 18 visits on 21/05/2026
+⚠ WARNING: Auditor 4 has 18 visits on 21/05/2026
+⚠ WARNING: Auditor 1 has 15 visits on 22/05/2026
+⚠ WARNING: Auditor 2 has 14 visits on 22/05/2026
+⚠ WARNING: Auditor 3 has 14 visits on 22/05/2026
+⚠ WARNING: Auditor 4 has 14 visits on 22/05/2026
+⚠ WARNING: Auditor 1 has 17 visits on 23/05/2026
+⚠ WARNING: Auditor 2 has 17 visits on 23/05/2026
+⚠ WARNING: Auditor 3 has 16 visits on 23/05/2026
+⚠ WARNING: Auditor 4 has 16 visits on 23/05/2026
+⚠ WARNING: Auditor 1 has only 3 visits on 25/05/2026
+⚠ WARNING: Auditor 2 has only 3 visits on 25/05/2026
+⚠ WARNING: Auditor 3 has only 2 visits on 25/05/2026
+⚠ WARNING: Auditor 4 has only 2 visits on 25/05/2026
+⚠ WARNING: Auditor 1 has only 7 visits on 27/05/2026
+⚠ WARNING: Auditor 2 has only 6 visits on 27/05/2026
+⚠ WARNING: Auditor 3 has only 6 visits on 27/05/2026
+⚠ WARNING: Auditor 4 has only 6 visits on 27/05/2026
+⚠ WARNING: Auditor 1 has only 5 visits on 28/05/2026
+⚠ WARNING: Auditor 2 has only 4 visits on 28/05/2026
+⚠ WARNING: Auditor 3 has only 4 visits on 28/05/2026
+⚠ WARNING: Auditor 4 has only 4 visits on 28/05/2026
+⚠ WARNING: Auditor 1 has only 7 visits on 30/05/2026
+⚠ WARNING: Auditor 2 has only 7 visits on 30/05/2026
+⚠ WARNING: Auditor 3 has only 6 visits on 30/05/2026
+⚠ WARNING: Auditor 4 has only 6 visits on 30/05/2026
 
 ======================
 FINAL RESULTS
 ======================
 ✓ Main audits exported: 400
-✓ Buffer exported: 120
-✓ Total selected: 520
+✓ Buffer exported: 0
+✓ Total selected: 400
 ✓ Average audits/day: 33.33
 ✓ Average audits/auditor/day: 8.33
 

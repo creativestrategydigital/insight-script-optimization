@@ -41,17 +41,6 @@ const BUFFER_PERCENT = 0.3;
 const BUFFER_SIZE = 120;
 
 // ======================================================
-// TIER PRIORITY COEFFICIENTS
-// ======================================================
-
-const TIER_COEFFICIENTS = {
-  'Tier 1': 5,
-  'Tier 2': 3,
-  'Tier 3': 2,
-  'Tier 4': 1
-};
-
-// ======================================================
 // DATE FUNCTIONS
 // ======================================================
  
@@ -134,28 +123,6 @@ function shuffle(array) {
   }
  
   return arr;
-}
-
-// ======================================================
-// WEIGHTED SHUFFLE (for tier priority)
-// ======================================================
-
-function weightedShuffle(visits) {
-
-  // Score each visit: random * tier coefficient
-  // Higher tier = higher chance of getting a high score
-  const scored =
-    visits.map((v) => ({
-      visit: v,
-      score:
-        Math.random() *
-        (v.tierCoefficient || 1)
-    }));
-
-  // Sort by score descending
-  scored.sort((a, b) => b.score - a.score);
-
-  return scored.map((s) => s.visit);
 }
  
 // ======================================================
@@ -503,106 +470,249 @@ function main() {
     row.eligibleAuditDates =
       eligibleAuditDates;
 
-    // Read tier from 'Verif tiering' column and assign coefficient
-    const tierValue =
-      row['Verif tiering'];
-
-    row.tierCoefficient =
-      TIER_COEFFICIENTS[tierValue] || 1;
-
-    row.tier = tierValue || 'Unknown';
-
     visits.push(row);
   }
  
   console.log(
     `✓ Eligible visits: ${visits.length}`
   );
-
-  // TIER DISTRIBUTION
-  const tierCounts = {};
-
-  for (const v of visits) {
-
-    const tier =
-      v.tier || 'Unknown';
-
-    tierCounts[tier] =
-      (tierCounts[tier] || 0) + 1;
-  }
-
-  console.log(
-    '\n======================'
-  );
-
-  console.log(
-    'TIER DISTRIBUTION'
-  );
-
-  console.log(
-    '======================'
-  );
-
-  for (
-    const [tier, count] of
-    Object.entries(tierCounts)
-  ) {
-
-    const coeff =
-      TIER_COEFFICIENTS[tier] || 1;
-
-    console.log(
-      `${tier}: ${count} visits (coefficient: ${coeff})`
-    );
-  }
  
   // ======================================================
-  // GROUP BY SR
+  // GROUP BY SR AND TIER
   // ======================================================
- 
+
   const bySR = {};
- 
+  const bySRandTier = {};
+
   for (const v of visits) {
- 
+
     if (!bySR[v.SR]) {
       bySR[v.SR] = [];
     }
- 
     bySR[v.SR].push(v);
+
+    const tier = v['Verif tiering'] || 'Unknown';
+    const key = `${v.SR}|${tier}`;
+
+    if (!bySRandTier[key]) {
+      bySRandTier[key] = [];
+    }
+    bySRandTier[key].push(v);
   }
- 
+
   // ======================================================
-  // USE ALL VISITS (NO SAMPLING BEFORE ASSIGNMENT)
+  // CALCULATE TARGETS PER SR AND TIER (EQUITABLE DISTRIBUTION)
   // ======================================================
 
-  const selectedMain = [...visits];
+  const srList = Object.keys(bySR).sort((a, b) => a.localeCompare(b));
+  const tiers = ['Tier 1', 'Tier 2', 'Tier 3'];
 
-  const selectedBuffer = [];  // No buffer in this mode
+  // Step 1: Calculate total visits per SR
+  const totalVisitsBySR = {};
+  for (const sr of srList) {
+    totalVisitsBySR[sr] = bySR[sr].length;
+  }
+
+  // Step 2: Select TOP 20 SR with most visits
+  const TOP_SR_COUNT = 20;
+  const sortedSR = [...srList].sort((a, b) => totalVisitsBySR[b] - totalVisitsBySR[a]);
+  const selectedSRList = sortedSR.slice(0, TOP_SR_COUNT);
+
+  console.log(
+    '\n======================'
+  );
+  console.log(
+    `TOP ${TOP_SR_COUNT} SR SELECTED (by total visits)`
+  );
+  console.log(
+    '======================'
+  );
+  for (let i = 0; i < sortedSR.length; i++) {
+    const sr = sortedSR[i];
+    const marker = i < TOP_SR_COUNT ? '✓' : '✗';
+    console.log(`${marker} ${sr}: ${totalVisitsBySR[sr]} visits`);
+  }
+
+  // Step 3: Filter visits to only include selected SRs
+  const filteredVisits = visits.filter(v => selectedSRList.includes(v.SR));
+  const filteredBySR = {};
+  const filteredBySRandTier = {};
+
+  for (const v of filteredVisits) {
+    if (!filteredBySR[v.SR]) {
+      filteredBySR[v.SR] = [];
+    }
+    filteredBySR[v.SR].push(v);
+
+    const tier = v['Verif tiering'] || 'Unknown';
+    const key = `${v.SR}|${tier}`;
+    if (!filteredBySRandTier[key]) {
+      filteredBySRandTier[key] = [];
+    }
+    filteredBySRandTier[key].push(v);
+  }
+
+  // Recalculate with filtered data
+  const finalSRList = selectedSRList;
+  let globalTotalVisits = filteredVisits.length;
+
+  // Step 4: Calculate total target for each SR (proportional to their visits)
+  const targetBySR = {};
+  for (const sr of finalSRList) {
+    const proportion = filteredBySR[sr].length / globalTotalVisits;
+    targetBySR[sr] = Math.round(proportion * TARGET_AUDITS);
+  }
+
+  // Step 5: Distribute each SR's target EQUALLY between their 3 Tiers
+  const targetsBySRandTier = {};
+
+  for (const sr of finalSRList) {
+    const srTarget = targetBySR[sr];
+
+    // Get available visits per tier for this SR
+    const availableByTier = {};
+    for (const tier of tiers) {
+      const key = `${sr}|${tier}`;
+      availableByTier[tier] = filteredBySRandTier[key] ? filteredBySRandTier[key].length : 0;
+    }
+
+    const totalAvailable = availableByTier['Tier 1'] + availableByTier['Tier 2'] + availableByTier['Tier 3'];
+
+    if (totalAvailable === 0) {
+      continue;
+    }
+
+    // Start with equal distribution (as much as possible)
+    let remainingTarget = Math.min(srTarget, totalAvailable);
+    const tierTargets = {};
+
+    // First pass: try to give equal amount to each tier with available visits
+    const tiersWithVisits = tiers.filter(t => availableByTier[t] > 0);
+    const basePerTier = Math.floor(remainingTarget / tiersWithVisits.length);
+
+    for (const tier of tiers) {
+      if (availableByTier[tier] > 0) {
+        tierTargets[tier] = Math.min(basePerTier, availableByTier[tier]);
+        remainingTarget -= tierTargets[tier];
+      } else {
+        tierTargets[tier] = 0;
+      }
+    }
+
+    // Second pass: distribute remaining to tiers that can take more
+    for (const tier of tiers) {
+      if (remainingTarget <= 0) break;
+      const canAdd = availableByTier[tier] - tierTargets[tier];
+      if (canAdd > 0) {
+        const add = Math.min(canAdd, remainingTarget);
+        tierTargets[tier] += add;
+        remainingTarget -= add;
+      }
+    }
+
+    // Store targets
+    for (const tier of tiers) {
+      const key = `${sr}|${tier}`;
+      targetsBySRandTier[key] = tierTargets[tier] || 0;
+    }
+  }
+
+  // Step 6: Adjust to ensure we hit exactly TARGET_AUDITS (400)
+  let calculatedTotal = 0;
+  for (const key of Object.keys(targetsBySRandTier)) {
+    calculatedTotal += targetsBySRandTier[key];
+  }
+
+  let diff = TARGET_AUDITS - calculatedTotal;
+
+  if (diff !== 0) {
+    // Sort all SR-Tier combinations by available (descending) for adjustment
+    const allCombinations = [];
+    for (const sr of finalSRList) {
+      for (const tier of tiers) {
+        const key = `${sr}|${tier}`;
+        const available = filteredBySRandTier[key] ? filteredBySRandTier[key].length : 0;
+        const target = targetsBySRandTier[key] || 0;
+        if (available > 0) {
+          allCombinations.push({ key, sr, tier, available, target });
+        }
+      }
+    }
+
+    allCombinations.sort((a, b) => b.available - a.available);
+
+    // Add or remove to match TARGET_AUDITS
+    for (const combo of allCombinations) {
+      if (diff === 0) break;
+      if (diff > 0 && combo.target < combo.available) {
+        const add = Math.min(diff, combo.available - combo.target);
+        targetsBySRandTier[combo.key] = combo.target + add;
+        diff -= add;
+      } else if (diff < 0 && combo.target > 0) {
+        const remove = Math.min(Math.abs(diff), combo.target);
+        targetsBySRandTier[combo.key] = combo.target - remove;
+        diff += remove;
+      }
+    }
+  }
+
+  // ======================================================
+  // SELECT VISITS BASED ON TARGETS
+  // ======================================================
+
+  const selectedMain = [];
+  const selectedBuffer = [];
 
   console.log(
     '\n======================'
   );
 
   console.log(
-    'ALL VISITS'
+    'EQUITABLE SELECTION BY SR AND TIER'
   );
 
   console.log(
     '======================'
   );
 
-  for (
-    const [sr, srVisits]
-    of Object.entries(bySR)
-  ) {
+  for (const tier of tiers) {
+    console.log(`\n--- ${tier} ---`);
 
-    console.log(
-      `${sr} | Universe=${srVisits.length}`
-    );
+    for (const sr of finalSRList) {
+      const key = `${sr}|${tier}`;
+      const available = filteredBySRandTier[key] || [];
+      const target = targetsBySRandTier[key] || 0;
+
+      if (available.length > 0) {
+        // Shuffle and select
+        const shuffled = shuffle(available);
+        const selected = shuffled.slice(0, Math.min(target, available.length));
+
+        selectedMain.push(...selected);
+
+        console.log(
+          `${sr} | ${tier}: Target=${target}, Available=${available.length}, Selected=${selected.length}`
+        );
+      }
+    }
+  }
+
+  // Add remaining visits from filtered data if we haven't reached TARGET_AUDITS exactly
+  const currentTotal = selectedMain.length;
+  if (currentTotal < TARGET_AUDITS) {
+    console.log(`\n⚠ Under target: ${currentTotal}/${TARGET_AUDITS}. Adding from remaining pool...`);
+
+    // Find remaining eligible visits not yet selected (from filtered pool)
+    const selectedSet = new Set(selectedMain.map(v => v['DB-ID']));
+    const remaining = filteredVisits.filter(v => !selectedSet.has(v['DB-ID']));
+    const shuffledRemaining = shuffle(remaining);
+    const needed = TARGET_AUDITS - currentTotal;
+
+    selectedMain.push(...shuffledRemaining.slice(0, needed));
   }
 
   console.log(
-    `\n✓ Total eligible visits: ${selectedMain.length}`
+    `\n✓ Total selected for main sample: ${selectedMain.length}`
   );
  
   // ======================================================
@@ -744,7 +854,7 @@ function main() {
   }
  
   const randomizedMain =
-    weightedShuffle(selectedMain);
+    shuffle(selectedMain);
  
   for (const v of randomizedMain) {
  
@@ -821,7 +931,7 @@ function main() {
   }
 
   // ======================================================
-  // LIMIT TO DAILY TARGET + BUFFER (30% OF MAIN, MAX 120)
+  // KEEP ALL ASSIGNED AUDITS IN MAIN FILE
   // ======================================================
 
   console.log(
@@ -829,81 +939,46 @@ function main() {
   );
 
   console.log(
-    'LIMITING TO DAILY TARGETS + BUFFER (30% MAX 120)'
+    'KEEPING ALL ASSIGNED AUDITS IN MAIN FILE'
   );
 
   console.log(
     '======================'
   );
 
-  let bufferCountTotal = 0;
-
+  // Calculate how many audits we have per day
   for (const d of AUDITOR_DATES) {
+    const count = auditsByDate[d].length;
+    const target = dailyTargets[d];
 
-    if (bufferCountTotal >= BUFFER_SIZE) {
-      break;
-    }
-
-    const target =
-      dailyTargets[d];
-
-    if (
-      auditsByDate[d].length >
-      target
-    ) {
-
-      // First: limit to target (main visits)
-      const shuffled =
-        shuffle(
-          auditsByDate[d]
-        );
-
-      const kept =
-        shuffled.slice(
-          0,
-          target
-        );
-
-      auditsByDate[d] = kept;
-
-      // Second: take BUFFER_PERCENT of main for buffer (but not exceeding remaining buffer)
-      const shuffledMain =
-        shuffle([...kept]);
-
-      const remainingBuffer =
-        BUFFER_SIZE -
-        bufferCountTotal;
-
-      const bufferCount =
-        Math.min(
-          Math.round(
-            target *
-            BUFFER_PERCENT
-          ),
-          remainingBuffer
-        );
-
-      const bufferPart =
-        shuffledMain.slice(
-          0,
-          bufferCount
-        );
-
-      selectedBuffer.push(
-        ...bufferPart
-      );
-
-      bufferCountTotal += bufferPart.length;
-
-      console.log(
-        `✓ ${d}: Main=${kept.length}, Buffer+=${bufferPart.length} (${Math.round(BUFFER_PERCENT*100)}%) [${bufferCountTotal}/${BUFFER_SIZE}]`
-      );
+    if (count > target) {
+      console.log(`⚠ ${d}: ${count} audits assigned (exceeds target ${target})`);
+    } else if (count < target && count > 0) {
+      console.log(`⚠ ${d}: ${count} audits assigned (below target ${target})`);
+    } else if (count === target && count > 0) {
+      console.log(`✓ ${d}: ${count} audits assigned (exact target)`);
+    } else {
+      console.log(`⚠ ${d}: No audits assigned`);
     }
   }
 
-  console.log(
-    `\n✓ Buffer total: ${selectedBuffer.length} (max ${BUFFER_SIZE})`
-  );
+  // Calculate total audits in main file
+  let totalInMain = 0;
+  for (const d of AUDITOR_DATES) {
+    totalInMain += auditsByDate[d].length;
+  }
+
+  console.log(`\n✓ Total audits in main file: ${totalInMain}`);
+
+  // Buffer is created from the pool of non-selected visits if needed
+  // For now, we keep the buffer empty or fill it with remaining eligible visits
+  let bufferCountTotal = 0;
+
+  if (selectedBuffer.length === 0 && bufferCountTotal < BUFFER_SIZE) {
+    // If buffer is empty, we can optionally fill it from remaining visits
+    // But for equitable distribution, we keep buffer separate
+    console.log(`✓ Buffer: ${selectedBuffer.length} visits`);
+  }
 
   // ======================================================
   // BUILD FINAL OUTPUT
@@ -1026,7 +1101,10 @@ function main() {
  
               SR:
                 v.SR,
- 
+
+              Tier:
+                v['Verif tiering'],
+
               Territory:
                 v.Territory,
  
@@ -1044,10 +1122,7 @@ function main() {
  
               Channel:
                 v['New Channel'],
-
-              Tier:
-                v.tier,
-
+ 
               Telephone:
                 v.Telephone,
  
@@ -1203,4 +1278,4 @@ function main() {
 }
  
 main();
-// node generate_audit_routes.js "Abidjan_Mai_16_28.xls" > audit_plan.txt
+// node generate_audit_routes.js "Abidjan_Mai_16_28.csv" > audit_plan.txt
