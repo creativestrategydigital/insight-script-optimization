@@ -657,328 +657,209 @@ function main() {
   }
 
   // ======================================================
-  // SELECT VISITS BASED ON TARGETS
+  // DAILY CAPACITY SETUP (40 visits/day max = 4 auditors × 10 visits)
+  // ======================================================
+
+  const DAILY_MAX_CAPACITY =
+    NUM_AUDITORS * MAX_VISITS_PER_AUDITOR;  // 4 * 10 = 40
+
+  const dailyTargets = {};
+  const auditsByDate = {};
+
+  for (const d of AUDITOR_DATES) {
+    dailyTargets[d] = DAILY_MAX_CAPACITY;
+    auditsByDate[d] = [];
+  }
+
+  // Check eligibility per date and adjust targets
+  const eligibleByDate = {};
+  for (const d of AUDITOR_DATES) {
+    eligibleByDate[d] = 0;
+  }
+  for (const v of filteredVisits) {
+    for (const ad of v.eligibleAuditDates) {
+      if (eligibleByDate[ad] !== undefined) {
+        eligibleByDate[ad]++;
+      }
+    }
+  }
+
+  // Adjust targets: if a day has fewer eligible visits than capacity, reduce
+  for (const d of AUDITOR_DATES) {
+    if (eligibleByDate[d] === 0) {
+      dailyTargets[d] = 0;
+    } else if (eligibleByDate[d] < DAILY_MAX_CAPACITY) {
+      dailyTargets[d] = eligibleByDate[d];
+    }
+  }
+
+  console.log('\n======================');
+  console.log('DAILY CAPACITY');
+  console.log('======================');
+  for (const d of AUDITOR_DATES) {
+    const eligible = eligibleByDate[d];
+    const cap = dailyTargets[d];
+    if (eligible === 0) {
+      console.log(`⚠ ${d}: ELIGIBLE=0 → CAPACITY=0`);
+    } else if (cap < DAILY_MAX_CAPACITY) {
+      console.log(`⚠ ${d}: ELIGIBLE=${eligible} < MAX=${DAILY_MAX_CAPACITY} → CAPACITY=${cap}`);
+    } else {
+      console.log(`✓ ${d}: ELIGIBLE=${eligible}, CAPACITY=${cap}`);
+    }
+  }
+
+  // ======================================================
+  // SELECT VISITS WITH DATE-AWARE EQUITABLE DISTRIBUTION
   // ======================================================
 
   const selectedMain = [];
   const selectedBuffer = [];
 
-  console.log(
-    '\n======================'
-  );
+  // Group filtered visits by SR, Tier, AND eligible audit date
+  const visitsBySRTierDate = {};
+  for (const v of filteredVisits) {
+    const tier = v['Verif tiering'] || 'Unknown';
+    for (const ad of v.eligibleAuditDates) {
+      const groupKey = `${v.SR}|${tier}|${ad}`;
+      if (!visitsBySRTierDate[groupKey]) {
+        visitsBySRTierDate[groupKey] = [];
+      }
+      visitsBySRTierDate[groupKey].push(v);
+    }
+  }
 
-  console.log(
-    'EQUITABLE SELECTION BY SR AND TIER'
-  );
+  // Track how many visits are assigned per day
+  const assignedPerDay = {};
+  for (const d of AUDITOR_DATES) {
+    assignedPerDay[d] = 0;
+  }
 
-  console.log(
-    '======================'
-  );
+  // Track selected visit IDs to avoid duplicates
+  const selectedIds = new Set();
+
+  console.log('\n======================');
+  console.log('EQUITABLE SELECTION BY SR AND TIER (DATE-AWARE)');
+  console.log('======================');
 
   for (const tier of tiers) {
     console.log(`\n--- ${tier} ---`);
 
     for (const sr of finalSRList) {
       const key = `${sr}|${tier}`;
-      const available = filteredBySRandTier[key] || [];
       const target = targetsBySRandTier[key] || 0;
+      if (target === 0) continue;
 
-      if (available.length > 0) {
-        // Shuffle and select
-        const shuffled = shuffle(available);
-        const selected = shuffled.slice(0, Math.min(target, available.length));
-
-        selectedMain.push(...selected);
-
-        console.log(
-          `${sr} | ${tier}: Target=${target}, Available=${available.length}, Selected=${selected.length}`
+      // Collect all available visits for this SR/Tier, grouped by date
+      const visitsByDate = {};
+      for (const d of AUDITOR_DATES) {
+        const groupKey = `${sr}|${tier}|${d}`;
+        const pool = (visitsBySRTierDate[groupKey] || []).filter(
+          v => !selectedIds.has(v['DB-ID'])
         );
+        if (pool.length > 0) {
+          visitsByDate[d] = shuffle(pool);
+        }
       }
-    }
-  }
 
-  // Add remaining visits from filtered data if we haven't reached TARGET_AUDITS exactly
-  const currentTotal = selectedMain.length;
-  if (currentTotal < TARGET_AUDITS) {
-    console.log(`\n⚠ Under target: ${currentTotal}/${TARGET_AUDITS}. Adding from remaining pool...`);
+      let selected = 0;
 
-    // Find remaining eligible visits not yet selected (from filtered pool)
-    const selectedSet = new Set(selectedMain.map(v => v['DB-ID']));
-    const remaining = filteredVisits.filter(v => !selectedSet.has(v['DB-ID']));
-    const shuffledRemaining = shuffle(remaining);
-    const needed = TARGET_AUDITS - currentTotal;
+      // Round-robin across dates sorted by remaining capacity (least filled first)
+      while (selected < target) {
+        // Get dates with remaining capacity and available visits
+        const availableDates = AUDITOR_DATES.filter(
+          d => visitsByDate[d] && visitsByDate[d].length > 0 &&
+               assignedPerDay[d] < dailyTargets[d]
+        );
 
-    selectedMain.push(...shuffledRemaining.slice(0, needed));
-  }
+        if (availableDates.length === 0) break;
 
-  console.log(
-    `\n✓ Total selected for main sample: ${selectedMain.length}`
-  );
- 
-  // ======================================================
-  // FIXED DAILY TARGETS
-  // ======================================================
- 
-  const dailyTargets = {};
- 
-  const BASE_TARGET =
-    Math.floor(
-      TARGET_AUDITS /
-      AUDITOR_DATES.length
-    );
- 
-  let remaining =
-    TARGET_AUDITS -
-    (
-      BASE_TARGET *
-      AUDITOR_DATES.length
-    );
- 
-  for (const d of AUDITOR_DATES) {
- 
-    dailyTargets[d] =
-      BASE_TARGET;
-  }
- 
-  // DISTRIBUTE REMAINING
-  for (const d of AUDITOR_DATES) {
- 
-    if (remaining <= 0) {
-      break;
-    }
- 
-    dailyTargets[d]++;
- 
-    remaining--;
-  }
- 
-  console.log(
-    '\n======================'
-  );
- 
-  console.log(
-    'FIXED DAILY TARGETS'
-  );
- 
-  console.log(
-    '======================'
-  );
- 
-  for (const d of AUDITOR_DATES) {
- 
-    console.log(
-      `${d} : ${dailyTargets[d]} audits`
-    );
-  }
- 
-  // ======================================================
-  // CHECK ELIGIBILITY VS TARGETS
-  // ======================================================
+        // Sort by remaining capacity descending (fill least-full days first)
+        availableDates.sort((a, b) =>
+          (dailyTargets[b] - assignedPerDay[b]) - (dailyTargets[a] - assignedPerDay[a])
+        );
 
-  const eligibleByDate = {};
+        // Pick one visit from the day with most remaining capacity
+        const bestDate = availableDates[0];
+        const v = visitsByDate[bestDate].pop();
 
-  for (const d of AUDITOR_DATES) {
+        if (selectedIds.has(v['DB-ID'])) continue;
 
-    eligibleByDate[d] = 0;
-  }
-
-  for (const v of visits) {
-
-    for (
-      const ad of
-      v.eligibleAuditDates
-    ) {
-
-      if (
-        eligibleByDate[ad] !==
-        undefined
-      ) {
-
-        eligibleByDate[ad]++;
+        selectedIds.add(v['DB-ID']);
+        v.AuditDate = bestDate;
+        auditsByDate[bestDate].push(v);
+        assignedPerDay[bestDate]++;
+        selectedMain.push(v);
+        selected++;
       }
-    }
-  }
 
-  console.log(
-    '\n======================'
-  );
-
-  const DAILY_MAX_CAPACITY =
-    NUM_AUDITORS *
-    MAX_VISITS_PER_AUDITOR;  // 4 * 10 = 40
-
-  // FIRST PASS: Set target to min(eligible, capacity) or 0 if no eligible
-  for (const d of AUDITOR_DATES) {
-
-    const eligible =
-      eligibleByDate[d];
-
-    if (eligible === 0) {
-
-      dailyTargets[d] = 0;
-
+      const availableTotal = (filteredBySRandTier[key] || []).length;
       console.log(
-        `⚠ ${d}: ELIGIBLE=0 → ADJUSTED TO 0`
-      );
-    } else if (
-      eligible >=
-      DAILY_MAX_CAPACITY
-    ) {
-
-      dailyTargets[d] =
-        DAILY_MAX_CAPACITY;
-
-      console.log(
-        `✓ ${d}: ELIGIBLE=${eligible}, CAPACITY=${DAILY_MAX_CAPACITY}`
-      );
-    } else {
-
-      dailyTargets[d] =
-        eligible;
-
-      console.log(
-        `⚠ ${d}: ELIGIBLE=${eligible} < CAPACITY=${DAILY_MAX_CAPACITY} → ADJUSTED TO ${eligible}`
+        `${sr} | ${tier}: Target=${target}, Available=${availableTotal}, Selected=${selected}`
       );
     }
   }
 
-  // ======================================================
-  // ASSIGN AUDITS TO DAYS
-  // ======================================================
+  // If under target, try to fill from remaining pool
+  if (selectedMain.length < TARGET_AUDITS) {
+    console.log(`\n⚠ Under target: ${selectedMain.length}/${TARGET_AUDITS}. Filling from remaining pool...`);
 
-  const auditsByDate = {};
-
-  for (const d of AUDITOR_DATES) {
-
-    auditsByDate[d] = [];
-  }
- 
-  const randomizedMain =
-    shuffle(selectedMain);
- 
-  for (const v of randomizedMain) {
- 
-    let assigned = false;
- 
-    const possibleDates =
-      shuffle(
-        v.eligibleAuditDates
-      );
- 
-    for (
-      const ad of possibleDates
-    ) {
- 
-      if (
-        auditsByDate[ad]
-          .length <
-        dailyTargets[ad]
-      ) {
- 
-        v.AuditDate = ad;
- 
-        auditsByDate[ad]
-          .push(v);
- 
-        assigned = true;
- 
-        break;
-      }
-    }
- 
-    // FALLBACK
-    if (!assigned) {
- 
-      const fallback =
-        possibleDates[0];
- 
-      v.AuditDate =
-        fallback;
- 
-      auditsByDate[
-        fallback
-      ].push(v);
-    }
-  }
-
-  // ======================================================
-  // ASSIGNMENT SUMMARY
-  // ======================================================
-
-  console.log(
-    '\n======================'
-  );
-
-  console.log(
-    'ASSIGNMENT SUMMARY'
-  );
-
-  console.log(
-    '======================'
-  );
-
-  for (const d of AUDITOR_DATES) {
-
-    const count =
-      auditsByDate[d].length;
-
-    const target =
-      dailyTargets[d];
-
-    console.log(
-      `${d}: ASSIGNED=${count}, TARGET=${target}`
+    const remainingPool = shuffle(
+      filteredVisits.filter(v => !selectedIds.has(v['DB-ID']))
     );
-  }
 
-  // ======================================================
-  // KEEP ALL ASSIGNED AUDITS IN MAIN FILE
-  // ======================================================
+    for (const v of remainingPool) {
+      if (selectedMain.length >= TARGET_AUDITS) break;
 
-  console.log(
-    '\n======================'
-  );
+      // Find a date with capacity
+      const possibleDates = v.eligibleAuditDates.filter(
+        d => assignedPerDay[d] < dailyTargets[d]
+      );
 
-  console.log(
-    'KEEPING ALL ASSIGNED AUDITS IN MAIN FILE'
-  );
+      if (possibleDates.length === 0) continue;
 
-  console.log(
-    '======================'
-  );
+      // Pick the date with most remaining capacity
+      possibleDates.sort((a, b) =>
+        (dailyTargets[b] - assignedPerDay[b]) - (dailyTargets[a] - assignedPerDay[a])
+      );
 
-  // Calculate how many audits we have per day
-  for (const d of AUDITOR_DATES) {
-    const count = auditsByDate[d].length;
-    const target = dailyTargets[d];
-
-    if (count > target) {
-      console.log(`⚠ ${d}: ${count} audits assigned (exceeds target ${target})`);
-    } else if (count < target && count > 0) {
-      console.log(`⚠ ${d}: ${count} audits assigned (below target ${target})`);
-    } else if (count === target && count > 0) {
-      console.log(`✓ ${d}: ${count} audits assigned (exact target)`);
-    } else {
-      console.log(`⚠ ${d}: No audits assigned`);
+      const bestDate = possibleDates[0];
+      selectedIds.add(v['DB-ID']);
+      v.AuditDate = bestDate;
+      auditsByDate[bestDate].push(v);
+      assignedPerDay[bestDate]++;
+      selectedMain.push(v);
     }
   }
 
-  // Calculate total audits in main file
+  console.log(`\n✓ Total selected for main sample: ${selectedMain.length}`);
+
+  console.log('\n======================');
+  console.log('ASSIGNMENT SUMMARY');
+  console.log('======================');
+
   let totalInMain = 0;
   for (const d of AUDITOR_DATES) {
-    totalInMain += auditsByDate[d].length;
+    const count = auditsByDate[d].length;
+    const cap = dailyTargets[d];
+    totalInMain += count;
+
+    if (count === 0 && cap === 0) {
+      console.log(`⚠ ${d}: No audits (no eligible visits)`);
+    } else if (count === cap) {
+      console.log(`✓ ${d}: ${count}/${cap} (full)`);
+    } else {
+      console.log(`⚠ ${d}: ${count}/${cap}`);
+    }
   }
 
   console.log(`\n✓ Total audits in main file: ${totalInMain}`);
 
-  // Buffer is created from the pool of non-selected visits if needed
-  // For now, we keep the buffer empty or fill it with remaining eligible visits
-  let bufferCountTotal = 0;
+  // Fill buffer with non-selected visits from the 20 selected SRs
+  const bufferPool = filteredVisits.filter(v => !selectedIds.has(v['DB-ID']));
+  const shuffledBufferPool = shuffle(bufferPool);
+  selectedBuffer.push(...shuffledBufferPool.slice(0, BUFFER_SIZE));
 
-  if (selectedBuffer.length === 0 && bufferCountTotal < BUFFER_SIZE) {
-    // If buffer is empty, we can optionally fill it from remaining visits
-    // But for equitable distribution, we keep buffer separate
-    console.log(`✓ Buffer: ${selectedBuffer.length} visits`);
-  }
+  console.log(`✓ Buffer: ${selectedBuffer.length} visits (max ${BUFFER_SIZE})`);
 
   // ======================================================
   // BUILD FINAL OUTPUT
@@ -1278,4 +1159,4 @@ function main() {
 }
  
 main();
-// node generate_audit_routes.js "Abidjan_Mai_16_28.csv" > audit_plan.txt
+// node generate_audit_routes.js "Abidjan_Mai_16_28.xls" > audit_plan.txt
